@@ -11,6 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import saharweissman.taskrunner.managers.TaskManager;
+import saharweissman.taskrunner.tasks.base.ITaskCallback;
 import saharweissman.taskrunner.tasks.base.ITaskRunner;
 import saharweissman.taskrunner.tasks.base.TaskInput;
 
@@ -27,10 +28,12 @@ public class TaskExecutor {
     // Sets the Time Unit to seconds
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
 
-    private ThreadPoolExecutor mTaskThreadPool = null;
-    private final BlockingQueue<Runnable> mTaskQueue;
+    private ParallelExecutor mTaskThreadPoolParallel = null;
+
+    private ThreadPoolExecutor mTaskThreadPoolSync = null;
+    private final BlockingQueue<Runnable> mTaskQueueSync;
+    private final BlockingQueue<Runnable> mTaskQueueParallel;
     private static final String TAG = "TaskExecutor";
-    private Handler mUIHandler = null;
 
     public static TaskExecutor getInstance(){
         if(sInstance == null){
@@ -43,34 +46,39 @@ public class TaskExecutor {
     private TaskExecutor(){
 
         // init work queue
-        mTaskQueue = new LinkedBlockingQueue<Runnable>();
+        mTaskQueueSync = new LinkedBlockingQueue<Runnable>();
+        mTaskQueueParallel = new LinkedBlockingQueue<Runnable>();
 
-
-        // init ui handler
-        mUIHandler = new Handler(Looper.getMainLooper()){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                Log.d(TAG, "handleMessage");
-            }
-        };
 
         // create thread pool manager
-        mTaskThreadPool = new ThreadPoolExecutor(
+        // sync - for UI
+        mTaskThreadPoolSync = new ThreadPoolExecutor(
                 NUMBER_OF_CORES,
                 NUMBER_OF_CORES,
                 KEEP_ALIVE_TIME,
                 KEEP_ALIVE_TIME_UNIT,
-                mTaskQueue
+                mTaskQueueSync
+        );
+
+        // sync - for non-UI
+        mTaskThreadPoolParallel = new ParallelExecutor(
+                NUMBER_OF_CORES,
+                NUMBER_OF_CORES,
+                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT,
+                mTaskQueueParallel
         );
     }
 
-    public void startTask(int taskID, TaskInput input){
-        ITaskRunner runner = TaskManager.getInstance().getTaskRunner(taskID, input);
+    public void runTask(int taskID, TaskInput input, ITaskCallback callback){
+        ITaskRunner runner = TaskManager.getInstance().getTaskRunner(taskID, input, callback);
         if(runner == null){
-            Log.e(TAG, "startTask: invalid taskID!");
+            Log.e(TAG, "runTask: invalid taskID!");
             return;
         }
-        sInstance.mTaskThreadPool.execute(runner);
+        if(runner.isSyncTask()) {
+            sInstance.mTaskThreadPoolSync.execute(runner);
+        }else{
+            sInstance.mTaskThreadPoolParallel.execute(runner);
+        }
     }
 }

@@ -1,13 +1,18 @@
 package saharweissman.taskrunner;
 
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONException;
+
 import saharweissman.taskrunner.executors.TaskExecutor;
+import saharweissman.taskrunner.tasks.base.ITaskCallback;
+import saharweissman.taskrunner.tasks.base.TaskError;
+import saharweissman.taskrunner.tasks.base.TaskResult;
 import saharweissman.taskrunner.tasks.sound.TaskSetRingerModeInput;
 
 public class MainActivity extends AppCompatActivity {
@@ -68,7 +73,26 @@ public class MainActivity extends AppCompatActivity {
 
     private void runTaskSetAlarm(int ringerMode) {
         TaskSetRingerModeInput input = new TaskSetRingerModeInput(ringerMode);
-        TaskExecutor.getInstance().startTask(1, input);
+        TaskExecutor.getInstance().runTask(1, input, new ITaskCallback() {
+            @Override
+            public void onTaskSuccess(TaskResult result) {
+                try {
+                    Log.d(TAG, "onTaskSuccess: result= " + result.getAsJson().toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onTaskError(TaskError error) {
+                Log.d(TAG, "onTaskError: error= " + error);
+            }
+
+            @Override
+            public void onTaskCancel() {
+                Log.d(TAG, "onTaskCancel");
+            }
+        });
     }
 
     public static Context getActivityContext(){

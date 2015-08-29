@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
+import saharweissman.taskrunner.tasks.base.ITaskCallback;
 import saharweissman.taskrunner.tasks.base.ITaskRunner;
 import saharweissman.taskrunner.tasks.base.TaskInput;
 import saharweissman.taskrunner.tasks.sound.TaskSetRingerMode;
@@ -35,7 +36,7 @@ public class TaskManager {
         return sInstance;
     }
 
-    public ITaskRunner getTaskRunner(int taskID, TaskInput input){
+    public ITaskRunner getTaskRunner(int taskID, TaskInput input, ITaskCallback callback){
         Class taskRunnerClass = mSupportedTasksMap.get(taskID);
         if(taskRunnerClass == null){
             Log.e(TAG, "getTaskRunner: invalid taskID = " + taskID);
@@ -43,8 +44,8 @@ public class TaskManager {
         }
 
         try {
-            Constructor<ITaskRunner> taskRunner = taskRunnerClass.getConstructor(TaskInput.class);
-            return taskRunner.newInstance(input);
+            Constructor<ITaskRunner> taskRunner = taskRunnerClass.getConstructor(TaskInput.class, ITaskCallback.class);
+            return taskRunner.newInstance(input, callback);
         } catch (InstantiationException e) {
             e.printStackTrace();
             return null;
