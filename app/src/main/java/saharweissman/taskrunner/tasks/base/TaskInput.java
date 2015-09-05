@@ -8,6 +8,6 @@ public abstract class TaskInput {
     public abstract boolean validateInput() throws IllegalArgumentException;
 
     public TaskInput(){
-        validateInput();
+//        validateInput();
     }
 }

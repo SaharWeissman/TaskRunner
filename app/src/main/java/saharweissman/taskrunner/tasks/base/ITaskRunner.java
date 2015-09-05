@@ -7,16 +7,15 @@ import android.util.Log;
  */
 public abstract class ITaskRunner implements Runnable {
 
-    private final TaskInput mInput;
-    private final ITaskCallback mCallback;
+    protected final TaskInput mInput;
+    protected final ITaskCallback mCallback;
     private final String TAG = "ITaskRunner";
 
     public abstract boolean isSyncTask();
 
     public abstract boolean checkPre(TaskInput input);
     public abstract void initTask(TaskInput input);
-    public abstract boolean runTask(TaskInput input);
-    public abstract TaskResult getResult();
+    public abstract void runTask(TaskInput input);
     protected abstract void onCancelTask();
 
     public void cancel(){
@@ -37,11 +36,7 @@ public abstract class ITaskRunner implements Runnable {
         try {
             if (checkPre(mInput)) {
                 initTask(mInput);
-                if (runTask(mInput)) {
-                    mCallback.onTaskSuccess(getResult());
-                }else{
-                    mCallback.onTaskError(null);// TODO: add task error
-                }
+                runTask(mInput);
             } else {
                 handlePreCon();
             }
@@ -55,5 +50,9 @@ public abstract class ITaskRunner implements Runnable {
 
     void handlePreCon() {
 
+    }
+
+    public void submitResult(TaskResult result){
+        mCallback.onTaskResult(result);
     }
 }

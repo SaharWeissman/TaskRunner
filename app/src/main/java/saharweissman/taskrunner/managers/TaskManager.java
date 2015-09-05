@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
+import saharweissman.taskrunner.tasks.Bluetooth.TaskBluetoothA2DPConnect;
 import saharweissman.taskrunner.tasks.base.ITaskCallback;
 import saharweissman.taskrunner.tasks.base.ITaskRunner;
 import saharweissman.taskrunner.tasks.base.TaskInput;
@@ -25,6 +26,7 @@ public class TaskManager {
         mSupportedTasksMap = new HashMap<Integer, Class>();
 
         mSupportedTasksMap.put(1, TaskSetRingerMode.class);
+        mSupportedTasksMap.put(2, TaskBluetoothA2DPConnect.class);
     }
 
     private TaskManager(){}
