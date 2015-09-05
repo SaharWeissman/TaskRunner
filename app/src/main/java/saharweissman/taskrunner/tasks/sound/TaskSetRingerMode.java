@@ -43,7 +43,7 @@ public class TaskSetRingerMode extends ITaskRunner {
     }
 
     @Override
-    public boolean runTask(TaskInput input) {
+    public void runTask(TaskInput input) {
         Log.d(TAG, "runTask");
 
         AudioManager am;
@@ -66,15 +66,10 @@ public class TaskSetRingerMode extends ITaskRunner {
                 }
             }
         }catch (Exception e){
-            return false;
+            Log.e(TAG, "error!", e);
         }
         mResult.mSuccess = true;
-        return true;
-    }
-
-    @Override
-    public TaskResult getResult() {
-        return mResult;
+        submitResult(mResult);
     }
 
     @Override
